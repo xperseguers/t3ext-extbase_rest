@@ -26,9 +26,10 @@
 class Tx_ExtbaseRest_Hook_FrontendRequestPreProcessor {
 
 	/**
+	 * Maps a REST request to an eID script.
+	 *
 	 * @param array $foo
 	 * @param array $bar
-	 *
 	 * @return void
 	 */
 	public function mapRestRequestToEid(array $foo, array $bar) {
@@ -39,4 +40,4 @@ class Tx_ExtbaseRest_Hook_FrontendRequestPreProcessor {
 		}
 	}
 
-} 
+}

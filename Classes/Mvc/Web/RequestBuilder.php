@@ -36,10 +36,9 @@ class Tx_ExtbaseRest_Mvc_Web_RequestBuilder extends Tx_Extbase_MVC_Web_RequestBu
 	protected static $reservedArgumentNames = array('controller', 'format');
 
 	/**
-	 * Inject an instance of the reflection service
+	 * Injects an instance of the reflection service.
 	 *
 	 * @param Tx_Extbase_Reflection_Service $reflectionService
-	 *
 	 * @return void
 	 */
 	public function injectReflectionService(Tx_Extbase_Reflection_Service $reflectionService) {
@@ -47,10 +46,9 @@ class Tx_ExtbaseRest_Mvc_Web_RequestBuilder extends Tx_Extbase_MVC_Web_RequestBu
 	}
 
 	/**
-	 * Builds a web request object from the raw HTTP information and the configuration
+	 * Builds a web request object from the raw HTTP information and the configuration.
 	 *
 	 * @return Tx_Extbase_MVC_Web_Request The web request as an object
-	 *
 	 * @throws Tx_Extbase_MVC_Exception
 	 */
 	public function build() {
@@ -76,6 +74,7 @@ class Tx_ExtbaseRest_Mvc_Web_RequestBuilder extends Tx_Extbase_MVC_Web_RequestBu
 			);
 		}
 
+		$request->setControllerVendorName($this->vendorName);
 		$request->setControllerName($controllerName);
 
 		foreach ($parameters as $argumentName => $argumentValue) {
@@ -106,14 +105,20 @@ class Tx_ExtbaseRest_Mvc_Web_RequestBuilder extends Tx_Extbase_MVC_Web_RequestBu
 	protected function buildParametersFromRequest() {
 		$rawRequestBody = file_get_contents('php://input');
 		$requestUri = t3lib_div::getIndpEnv('REQUEST_URI');
-		$match = NULL;
 
-		$pluginNamespace = Tx_Extbase_Utility_Extension::getPluginNamespace($this->extensionName, $this->pluginName);
+		if (version_compare(TYPO3_branch, '4.5', '=')) {
+			$pluginNamespace = Tx_Extbase_Utility_Extension::getPluginNamespace($this->extensionName, $this->pluginName);
+		} else {
+			/** @var Tx_Extbase_Service_ExtensionService $extensionService */
+			$extensionService = t3lib_div::makeInstance('Tx_Extbase_Service_ExtensionService');
+			$pluginNamespace = $extensionService->getPluginNamespace($this->extensionName, $this->pluginName);
+		}
+
 		$parameters = t3lib_div::_GPmerged($pluginNamespace);
 
-		if (preg_match(Tx_ExtbaseRest_Router::CONTROLLER_FORMAT_PATTERN, $requestUri, $match) === 1) {
-			$parameters['controller'] = t3lib_div::underscoredToUpperCamelCase($match[1]);
-			$parameters['format'] = $match[2];
+		if (preg_match(Tx_ExtbaseRest_Router::CONTROLLER_FORMAT_PATTERN, $requestUri, $matches) === 1) {
+			$parameters['controller'] = t3lib_div::underscoredToUpperCamelCase($matches[1]);
+			$parameters['format'] = $matches[2];
 		}
 
 		if (!empty($rawRequestBody) && $parameters['format'] === 'json') {
@@ -224,4 +229,4 @@ class Tx_ExtbaseRest_Mvc_Web_RequestBuilder extends Tx_Extbase_MVC_Web_RequestBu
 		return $canActionSatisfyRequest;
 	}
 
-} 
+}

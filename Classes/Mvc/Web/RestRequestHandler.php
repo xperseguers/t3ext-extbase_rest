@@ -48,7 +48,12 @@ class Tx_ExtbaseRest_Mvc_Web_RestRequestHandler extends Tx_Extbase_MVC_Web_Front
 		//$requestHashService->verifyRequest($request);
 		$request->setHmacVerified(TRUE);
 
-		if ($this->isCacheable($request->getControllerName(), $request->getControllerActionName())) {
+		if (version_compare(TYPO3_branch, '4.7', '<')) {
+			$isActionCacheable = $this->isCacheable($request->getControllerName(), $request->getControllerActionName());
+		} else {
+			$isActionCacheable = $this->extensionService->isActionCacheable(NULL, NULL, $request->getControllerName(), $request->getControllerActionName());
+		}
+		if ($isActionCacheable) {
 			$request->setIsCached(TRUE);
 		} else {
 			$contentObject = $this->configurationManager->getContentObject();
@@ -95,4 +100,4 @@ class Tx_ExtbaseRest_Mvc_Web_RestRequestHandler extends Tx_Extbase_MVC_Web_Front
 		return 200;
 	}
 
-} 
+}

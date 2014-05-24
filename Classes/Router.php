@@ -41,17 +41,21 @@ class Tx_ExtbaseRest_Router {
 	protected $objectManager;
 
 	/**
-	 * @param string $requestUri
+	 * Dispatches the request.
 	 *
+	 * @param string $requestUri
 	 * @return string|null
 	 */
 	public function dispatch($requestUri) {
 		$configuration = array();
 		$response = NULL;
-		$match = NULL;
 
-		if (preg_match(self::PLUGIN_NAMESPACE_PATTERN, $requestUri, $match) === 1) {
-			Tx_ExtbaseRest_Utility_FrontendUtility::startSimulation();
+		if (preg_match(self::PLUGIN_NAMESPACE_PATTERN, $requestUri, $matches) === 1) {
+			try {
+				Tx_ExtbaseRest_Utility_FrontendUtility::startSimulation();
+			} catch (Exception $e) {
+				// If sys_language_uid > 0
+			}
 
 			/** @var Tx_Extbase_Object_ObjectManager objectManager */
 			$this->objectManager = t3lib_div::makeInstance('Tx_Extbase_Object_ObjectManager');
@@ -59,9 +63,9 @@ class Tx_ExtbaseRest_Router {
 			/** @var Tx_ExtbaseRest_Core_Bootstrap $bootstrap */
 			$bootstrap = $this->objectManager->create('Tx_ExtbaseRest_Core_Bootstrap');
 
-			$namespaceParts = explode('.', $match[1]);
+			$namespaceParts = explode('.', $matches[1]);
 
-			if(count($namespaceParts) == 3) {
+			if (count($namespaceParts) === 3) {
 				$configuration['vendorName'] = t3lib_div::underscoredToUpperCamelCase($namespaceParts[0]);
 				$configuration['extensionName'] = t3lib_div::underscoredToUpperCamelCase($namespaceParts[1]);
 				$configuration['pluginName'] = t3lib_div::underscoredToUpperCamelCase($namespaceParts[2]);
@@ -80,4 +84,4 @@ class Tx_ExtbaseRest_Router {
 		return $response;
 	}
 
-} 
+}
